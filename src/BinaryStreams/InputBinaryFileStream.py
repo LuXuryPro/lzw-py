@@ -31,6 +31,7 @@ class InputBinaryFileStream:
         self.current_bits_size = 9
 
     def _read_buffer(self):
+        print("DWORDS left = {0}".format(self.size))
         bytes_int = self.file_handle.read(4)
         if bytes_int == b"":
             self.eof = True

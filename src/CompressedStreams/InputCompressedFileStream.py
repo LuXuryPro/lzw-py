@@ -1,10 +1,9 @@
 from io import BytesIO
 
 from BinaryStreams import InputBinaryFileStream
-from CompressedStreams.LZWCompressedFileStream import LZWStream
 
 
-class InputCompressedFileStream(LZWStream):
+class InputCompressedFileStream:
     def __init__(self, input_binary_file_stream: InputBinaryFileStream):
         """
 
@@ -19,7 +18,6 @@ class InputCompressedFileStream(LZWStream):
 
         :param output_binary_file_object: plik do którego zapisać wynik dekompresji 
         """
-        self.setup_dictionary()
         dict_size = 256
         dictionary = {i: bytes([i]) for i in range(dict_size)}
 
