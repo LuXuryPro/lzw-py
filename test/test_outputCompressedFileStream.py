@@ -1,9 +1,8 @@
-import struct
-from unittest import TestCase
 from io import BytesIO
+from unittest import TestCase
 
-from InputBinaryFileStream import InputBinaryFileStream
-from OutputBinaryFileStream import OutputBinaryFileStream
+from BinaryStreams.OutputBinaryFileStream import OutputBinaryFileStream
+from BinaryStreams.InputBinaryFileStream import InputBinaryFileStream
 
 
 class TestOutputCompressedFileStream(TestCase):

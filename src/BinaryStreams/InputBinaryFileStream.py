@@ -9,12 +9,14 @@ class InputBinaryFileStream:
     Czyta z pliku wartości ze słownika lzw na ustalonej liczbie bitów
     """
 
-    def __init__(self, file_handle: BytesIO):
+    def __init__(self, file_handle: BytesIO, size):
         self.max_buffer_size = 32
         self.file_handle = file_handle
         self.buffer = 0
         self.current_buffer_size = 0
         self.reset_bit_code_size()
+        self.eof = False
+        self.size = size
 
     def increase_bit_code_size(self):
         self.current_bits_size += 1
@@ -24,10 +26,17 @@ class InputBinaryFileStream:
 
     def _read_buffer(self):
         bytes_int = self.file_handle.read(4)
+        if bytes_int == b"":
+            self.eof = True
+            self.current_buffer_size = 0
+            return
         self.buffer = struct.unpack(">I", bytes_int)[0]
         self.current_buffer_size = 32
+        self.size -= 1
 
     def read(self):
+        if self.size == 0 and self.buffer == 0:
+            return b""
         left_in_buffer = self.current_buffer_size - self.current_bits_size
 
         if left_in_buffer < 0:
