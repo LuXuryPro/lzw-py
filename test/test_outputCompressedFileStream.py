@@ -43,3 +43,27 @@ class TestOutputCompressedFileStream(TestCase):
         for i in range(20):
             print(i)
             self.assertEquals(input_binary_file_stream.read(), ((1 << 9) - 1))
+
+    def test_write_read_inc(self):
+        file_handle = BytesIO()
+        output_binary_file_stream = OutputBinaryFileStream(file_handle)
+        input_binary_file_stream = InputBinaryFileStream(file_handle)
+
+        for i in range(500):
+            output_binary_file_stream.write(i)
+
+        output_binary_file_stream.increase_bit_code_size()
+
+        for i in range(1000):
+            output_binary_file_stream.write(i)
+
+        output_binary_file_stream.flush()
+        file_handle.seek(0)
+
+        for i in range(500):
+            self.assertEquals(input_binary_file_stream.read(), i)
+
+        input_binary_file_stream.increase_bit_code_size()
+
+        for i in range(1000):
+            self.assertEquals(input_binary_file_stream.read(), i)

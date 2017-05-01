@@ -23,21 +23,22 @@ class OutputBinaryFileStream:
         self.current_bits_size = 9
 
     def check_if_value_fits_bit_code_size(self, value, size):
+        if value == 0:
+            return
         if math.log2(value) > size:
             raise OverflowError(
                 "Attempt to write {value} using {size} bits".format(value=value, size=self.current_bits_size))
 
     def _write_current_buffer(self):
         bytes_int = struct.pack(">I", self.buffer)
-        print(bytes_int)
-        print(self.file_handle.write(bytes_int))
+        self.file_handle.write(bytes_int)
         self.buffer = 0
         self.current_buffer_size = 0
 
     def _write_to_buffer(self, value, size):
         self.check_if_value_fits_bit_code_size(value, size)
-        self.buffer <<= size
-        self.buffer |= value
+        self.buffer >>= size
+        self.buffer |= value << (32 - size)
         self.current_buffer_size += size
 
     def write(self, value):
@@ -56,5 +57,5 @@ class OutputBinaryFileStream:
             self._write_to_buffer(value, self.current_bits_size)
 
     def flush(self):
+        self._write_to_buffer(0, self.max_buffer_size - self.current_buffer_size)
         self._write_current_buffer()
-

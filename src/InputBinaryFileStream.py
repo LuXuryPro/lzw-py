@@ -33,17 +33,19 @@ class InputBinaryFileStream:
         if left_in_buffer < 0:
             # Too much to put in buffer - must flush
             return_value = 0
-            return_value |= self.buffer
+            return_value |= self.buffer & ((1 << self.current_buffer_size) - 1)
+            read = self.current_buffer_size
             left_to_read = self.current_bits_size - self.current_buffer_size
             self._read_buffer()
-            return_value <<= left_to_read
-            return_value |= self.buffer & ((1 << left_to_read) - 1)
+            return_value |= ((self.buffer & (1 << left_to_read) - 1)) << read
             self.buffer >>= left_to_read
+            self.buffer &= ((1 << 32) - 1)
             self.current_buffer_size -= left_to_read
             return return_value
         else:
             return_value = 0
             return_value |= self.buffer & ((1 << self.current_bits_size) - 1)
             self.buffer >>= self.current_bits_size
+            self.buffer &= ((1 << 32) - 1)
             self.current_buffer_size -= self.current_bits_size
             return return_value
