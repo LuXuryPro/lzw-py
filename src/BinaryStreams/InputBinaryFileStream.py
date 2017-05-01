@@ -10,8 +10,14 @@ class InputBinaryFileStream:
     """
 
     def __init__(self, file_handle: BytesIO, size):
+        """
+
+        :param file_handle: plik do czytania
+        :param size: ile pełnych 32 bit intow przeczytac z pliku
+        """
         self.max_buffer_size = 32
         self.file_handle = file_handle
+        self.file_handle.seek(0)
         self.buffer = 0
         self.current_buffer_size = 0
         self.reset_bit_code_size()

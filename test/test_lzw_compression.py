@@ -10,7 +10,7 @@ from CompressedStreams.OutputCompressedFileStream import OutputCompressedFileStr
 
 class TestOutputCompressedFileStream(TestCase):
     def test_compression(self):
-        bytes = b"12345123451234512345asdasdasdasdasdasdasdasd"
+        bytes = b"12345123451234512345asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd"
         file_handle = BytesIO(bytes)
         output_file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(output_file_handle)
@@ -18,6 +18,7 @@ class TestOutputCompressedFileStream(TestCase):
         compressed_stream.compress(file_handle)
 
         output_binary_file_stream.flush()
+        print(output_file_handle.getvalue().__sizeof__())
         output_file_handle.seek(0)
 
         input_binary_file_stream = InputBinaryFileStream(output_file_handle, output_binary_file_stream.counter)
@@ -25,3 +26,5 @@ class TestOutputCompressedFileStream(TestCase):
         decompresed_file_handle = BytesIO()
         decompresed_file_stream.decompress(decompresed_file_handle)
         self.assertEquals(decompresed_file_handle.getvalue(), bytes)
+        print(decompresed_file_handle.getvalue().__sizeof__())
+        print(bytes.__sizeof__())

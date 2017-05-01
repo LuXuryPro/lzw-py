@@ -1,3 +1,4 @@
+import struct
 from io import BytesIO
 
 from BinaryStreams.OutputBinaryFileStream import OutputBinaryFileStream
@@ -23,7 +24,7 @@ class OutputCompressedFileStream(LZWStream):
         w = ""
         input_byte = input_binary_file_object.read(1)
         while input_byte != b'':
-            input_byte = input_byte.decode('utf8')
+            input_byte = chr(struct.unpack("B", input_byte)[0])
             wc = w + input_byte
             if wc in self.dictionary:
                 w = wc
@@ -33,6 +34,10 @@ class OutputCompressedFileStream(LZWStream):
                 self.dictionary[wc] = self.dict_size
                 self.dict_size += 1
                 w = input_byte
+
+                if self.dict_size == 2 ** self.output_binary_file_stream.current_bits_size + 1:
+                    self.output_binary_file_stream.increase_bit_code_size()
+
             input_byte = input_binary_file_object.read(1)
 
         # Output the code for w.
