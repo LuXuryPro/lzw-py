@@ -28,7 +28,7 @@ print(-sum( count/lns * math.log(count/lns, 2) for count in p.values()))
 import matplotlib.pyplot as plt
 import numpy as np
 
-labels, values = zip(*p.items())
+labels, values = zip(*sorted(list(p.items()), key=lambda x: int(x[0])))
 
 indexes = np.arange(len(labels))
 width = 1
