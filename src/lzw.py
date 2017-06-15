@@ -1,33 +1,85 @@
 import argparse
 import os
 
+from os.path import isfile, join, split
+
 from BinaryStreams.InputBinaryFileStream import InputBinaryFileStream
 from BinaryStreams.OutputBinaryFileStream import OutputBinaryFileStream
 from CompressedStreams.InputCompressedFileStream import InputCompressedFileStream
 from CompressedStreams.OutputCompressedFileStream import OutputCompressedFileStream
 
-args = argparse.ArgumentParser()
-args.add_argument("-i", help="Input file path", required=True)
-args.add_argument("-o", help="Output file path", required=True)
-group = args.add_mutually_exclusive_group(required=False)
-group.add_argument("-d", action='store_true', help="Decompress", default=False)
-group.add_argument("-c", action='store_true', help="Compress", default=True)
 
-parsed_args = args.parse_args()
-print(parsed_args)
+def lzw(parsed_args):
 
-input_file_object = open(parsed_args.i, "rb")
-output_file_object = open(parsed_args.o, "wb")
+    if parsed_args.a and parsed_args.c and not parsed_args.d:
+        compress_all(parsed_args)
+        return
 
-if parsed_args.c and not parsed_args.d:
+    if parsed_args.a and parsed_args.d:
+        decompress_all(parsed_args)
+        return
+
+    input_file_object = open(parsed_args.i, "rb")
+    output_file_object = open(parsed_args.o, "wb")
+
+    if parsed_args.c and not parsed_args.d:
+        compress(input_file_object, output_file_object)
+
+    if parsed_args.d:
+        decompress(input_file_object, output_file_object, parsed_args)
+
+
+def compress(input_file_object, output_file_object):
     output_file_stream = OutputBinaryFileStream(output_file_object)
     output_compressed_stream = OutputCompressedFileStream(output_file_stream)
     output_compressed_stream.compress(input_file_object)
     output_file_stream.flush()
     output_file_object.flush()
 
-if parsed_args.d:
+
+def decompress(input_file_object, output_file_object, parsed_args):
     input_file_stream = InputBinaryFileStream(input_file_object, os.path.getsize(parsed_args.i) / 4)
     input_compressed_stream = InputCompressedFileStream(input_file_stream)
     input_compressed_stream.decompress(output_file_object)
     output_file_object.flush()
+
+
+def compress_all(parsed_args):
+    files = get_all_files_names_from_directory(parsed_args.i)
+    for file in files:
+        file_in = open(file, "rb")
+        file_out = split(file)[-1] + "_c"
+        file_out = open(join(parsed_args.o, file_out), "wb")
+        compress(file_in, file_out)
+
+
+def decompress_all(parsed_args):
+    files = get_all_files_names_from_directory(parsed_args.i)
+    for file in files:
+        file_in = open(file, "rb")
+        file_out = split(file)[-1]
+        file_out = file_out[:-2]
+        file_out = open(join(parsed_args.o, file_out), "wb")
+        decompress(file_in, file_out, parsed_args)
+
+
+def parse_script_arguments():
+    args = argparse.ArgumentParser()
+    args.add_argument("-i", help="Input file path", required=True)
+    args.add_argument("-o", help="Output file path", required=True)
+    args.add_argument("-a", help="Proceed all files in input directory", action="store_true")
+    group = args.add_mutually_exclusive_group(required=False)
+    group.add_argument("-d", action='store_true', help="Decompress", default=False)
+    group.add_argument("-c", action='store_true', help="Compress", default=True)
+
+    parsed_args = args.parse_args()
+    print(parsed_args)
+    return parsed_args
+
+
+def get_all_files_names_from_directory(path):
+    return [join(path, f) for f in os.listdir(path) if isfile(join(path, f))]
+
+if __name__ == '__main__':
+    program_args = parse_script_arguments()
+    lzw(program_args)
