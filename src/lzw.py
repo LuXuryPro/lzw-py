@@ -23,15 +23,15 @@ def lzw(parsed_args):
     output_file_object = open(parsed_args.o, "wb")
 
     if parsed_args.c and not parsed_args.d:
-        compress(input_file_object, output_file_object)
+        compress(input_file_object, output_file_object, parsed_args)
 
     if parsed_args.d:
         decompress(input_file_object, output_file_object, parsed_args)
 
 
-def compress(input_file_object, output_file_object):
+def compress(input_file_object, output_file_object, parsed_args):
     output_file_stream = OutputBinaryFileStream(output_file_object)
-    output_compressed_stream = OutputCompressedFileStream(output_file_stream)
+    output_compressed_stream = OutputCompressedFileStream(output_file_stream, parsed_args.b)
     output_compressed_stream.compress(input_file_object)
     output_file_stream.flush()
     output_file_object.flush()
@@ -39,7 +39,7 @@ def compress(input_file_object, output_file_object):
 
 def decompress(input_file_object, output_file_object, parsed_args):
     input_file_stream = InputBinaryFileStream(input_file_object, os.path.getsize(parsed_args.i) / 4)
-    input_compressed_stream = InputCompressedFileStream(input_file_stream)
+    input_compressed_stream = InputCompressedFileStream(input_file_stream, parsed_args.b)
     input_compressed_stream.decompress(output_file_object)
     output_file_object.flush()
 
@@ -50,7 +50,7 @@ def compress_all(parsed_args):
         file_in = open(file, "rb")
         file_out = split(file)[-1] + "_c"
         file_out = open(join(parsed_args.o, file_out), "wb")
-        compress(file_in, file_out)
+        compress(file_in, file_out, parsed_args)
 
 
 def decompress_all(parsed_args):
@@ -62,18 +62,23 @@ def decompress_all(parsed_args):
         file_out = open(join(parsed_args.o, file_out), "wb")
         decompress(file_in, file_out, parsed_args)
 
+def bit_size(x):
+    i = int(x)
+    if i < 9:
+         raise argparse.ArgumentTypeError("Minimum dictionary bitsize is 9 bits")
+    return i
 
 def parse_script_arguments():
     args = argparse.ArgumentParser()
-    args.add_argument("-i", help="Input file path", required=True)
-    args.add_argument("-o", help="Output file path", required=True)
+    args.add_argument("i", help="Input file path")
+    args.add_argument("o", help="Output file path")
     args.add_argument("-a", help="Proceed all files in input directory", action="store_true")
+    args.add_argument("-b", help="Max bit size of dictionary entry", default=12, type=bit_size)
     group = args.add_mutually_exclusive_group(required=False)
     group.add_argument("-d", action='store_true', help="Decompress", default=False)
     group.add_argument("-c", action='store_true', help="Compress", default=True)
 
     parsed_args = args.parse_args()
-    print(parsed_args)
     return parsed_args
 
 
