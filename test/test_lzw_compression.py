@@ -11,7 +11,7 @@ from CompressedStreams.OutputCompressedFileStream import OutputCompressedFileStr
 
 class TestOutputCompressedFileStream(TestCase):
     def test_compression(self):
-        bytes = b"12345123451234512345asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd"
+        bytes = b"1234512341234asdasdasdasdasd123123123"
         file_handle = BytesIO(bytes)
         output_file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(output_file_handle)

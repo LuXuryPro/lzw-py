@@ -16,6 +16,7 @@ class InputBinaryFileStream:
         :param size: ile pełnych 32 bit intow przeczytac z pliku
         """
         self.max_buffer_size = 32
+        self.remaining_bits = 0
         self.file_handle = file_handle
         self.file_handle.seek(0)
         self.buffer = 0
@@ -31,37 +32,45 @@ class InputBinaryFileStream:
         self.current_bits_size = 9
 
     def _read_buffer(self):
-        print("DWORDS left = {0}".format(self.size))
-        bytes_int = self.file_handle.read(4)
-        if bytes_int == b"":
-            self.eof = True
-            self.current_buffer_size = 0
-            return
-        self.buffer = struct.unpack(">I", bytes_int)[0]
-        self.current_buffer_size = 32
+        byte = self.file_handle.read(1)
+        self.buffer = struct.unpack("B", byte)[0]
         self.size -= 1
 
     def read(self):
-        if self.size == 0 and self.buffer == 0:
-            return b""
-        left_in_buffer = self.current_buffer_size - self.current_bits_size
+        if self.size <= 0:
+            raise OverflowError
 
-        if left_in_buffer < 0:
-            # Too much to put in buffer - must flush
-            return_value = 0
-            return_value |= self.buffer & ((1 << self.current_buffer_size) - 1)
-            read = self.current_buffer_size
-            left_to_read = self.current_bits_size - self.current_buffer_size
+        bits_to_read = self.current_bits_size
+        value_to_return = 0
+        re = bits_to_read
+        if self.remaining_bits:
+            value_to_return |= (self.buffer)
+            self.buffer = 0
+            re -= self.remaining_bits
+
+        remaining_bits = re % 8
+
+        num_whole_bytes = int(re / 8)
+        for i in range(num_whole_bytes):
             self._read_buffer()
-            return_value |= ((self.buffer & (1 << left_to_read) - 1)) << read
-            self.buffer >>= left_to_read
-            self.buffer &= ((1 << 32) - 1)
-            self.current_buffer_size -= left_to_read
-            return return_value
+            value_to_return |= self.buffer << (i*8 + self.remaining_bits)
+            re -= 8
+
+        if remaining_bits:
+            self._read_buffer()
+            re -= remaining_bits
+            assert (re == 0)
+            value_to_return |= ((self.buffer & ((2**(remaining_bits) - 1) << (8 - remaining_bits))) >> (8 - remaining_bits)) << (num_whole_bytes * 8 + self.remaining_bits)
+            self.buffer &= 2**(8 - remaining_bits) - 1
+            self.remaining_bits = 8 - remaining_bits
         else:
-            return_value = 0
-            return_value |= self.buffer & ((1 << self.current_bits_size) - 1)
-            self.buffer >>= self.current_bits_size
-            self.buffer &= ((1 << 32) - 1)
-            self.current_buffer_size -= self.current_bits_size
-            return return_value
+            self.remaining_bits = 0
+
+        return value_to_return
+
+
+
+
+
+
+

@@ -27,23 +27,24 @@ class InputCompressedFileStream:
         output_binary_file_object.write(bytes([w]))
         w = bytes([w])
         while True:
-            self.maintain_dictionary_capacity()
-            value = self.input_binary_file_stream.read()
-            if value == b"":
+            try:
+                self.maintain_dictionary_capacity()
+                value = self.input_binary_file_stream.read()
+
+                if value in self.dictionary:
+                    entry = self.dictionary[value]
+                elif value == self.dict_size:
+                    entry = w + bytes([w[0]])
+                else:
+                    raise ValueError('LZW Stream exception at value: %s' % value)
+                output_binary_file_object.write(entry)
+
+                self.dictionary[self.dict_size] = w + bytes([entry[0]])
+                self.dict_size += 1
+
+                w = entry
+            except OverflowError:
                 break
-
-            if value in self.dictionary:
-                entry = self.dictionary[value]
-            elif value == self.dict_size:
-                entry = w + bytes([w[0]])
-            else:
-                raise ValueError('LZW Stream exception at value: %s' % value)
-            output_binary_file_object.write(entry)
-
-            self.dictionary[self.dict_size] = w + bytes([entry[0]])
-            self.dict_size += 1
-
-            w = entry
 
     def clear_dictionary(self):
         self.dict_size = 256

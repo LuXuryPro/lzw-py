@@ -14,40 +14,41 @@ class TestOutputCompressedFileStream(TestCase):
         file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(file_handle)
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"\xff\xff\xff\xff")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"\xff\xff\xff\xff")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"\xff\xff\xff\xff")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"\xff\xff\xff\xff")
         output_binary_file_stream.write((1 << 9) - 1)
-        self.assertEquals(file_handle.getvalue(), b"\xff\xff\xff\xff\xff\xff\xff\xff")
 
     def test_write_read(self):
         file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(file_handle)
-        input_binary_file_stream = InputBinaryFileStream(file_handle)
-        for i in range(20):
-            output_binary_file_stream.write((1 << 9) - 1)
+        for i in range(512):
+            output_binary_file_stream.write(i)
+        output_binary_file_stream.increase_bit_code_size()
+        for i in range(512, 1024):
+            output_binary_file_stream.write(i)
+        output_binary_file_stream.increase_bit_code_size()
+        for i in range(1024, 2048):
+            output_binary_file_stream.write(i)
         output_binary_file_stream.flush()
         file_handle.seek(0)
 
-        for i in range(20):
-            print(i)
-            self.assertEquals(input_binary_file_stream.read(), ((1 << 9) - 1))
+        input_binary_file_stream = InputBinaryFileStream(file_handle, output_binary_file_stream.counter)
+        for i in range(512):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.increase_bit_code_size()
+        for i in range(512, 1024):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.increase_bit_code_size()
+        for i in range(1024, 2048):
+            self.assertEquals(input_binary_file_stream.read(),i)
 
     def test_write_read_inc(self):
         file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(file_handle)
-        input_binary_file_stream = InputBinaryFileStream(file_handle)
-
         for i in range(500):
             output_binary_file_stream.write(i)
 
@@ -59,6 +60,7 @@ class TestOutputCompressedFileStream(TestCase):
         output_binary_file_stream.flush()
         file_handle.seek(0)
 
+        input_binary_file_stream = InputBinaryFileStream(file_handle, output_binary_file_stream.counter)
         for i in range(500):
             self.assertEquals(input_binary_file_stream.read(), i)
 

@@ -11,6 +11,7 @@ class OutputBinaryFileStream:
 
     def __init__(self, file_handle: BytesIO):
         self.max_buffer_size = 32
+        self.remaining_bits = 0
         self.file_handle = file_handle
         self.buffer = 0
         self.current_buffer_size = 0
@@ -31,34 +32,40 @@ class OutputBinaryFileStream:
                 "Attempt to write {value} using {size} bits".format(value=value, size=self.current_bits_size))
 
     def _write_current_buffer(self):
-        bytes_int = struct.pack(">I", self.buffer)
-        self.file_handle.write(bytes_int)
+        byte = struct.pack("B", self.buffer)
+        self.file_handle.write(byte)
         self.buffer = 0
-        self.current_buffer_size = 0
         self.counter += 1
 
-    def _write_to_buffer(self, value, size):
-        self.check_if_value_fits_bit_code_size(value, size)
-        self.buffer >>= size
-        self.buffer |= value << (32 - size)
-        self.current_buffer_size += size
-
     def write(self, value):
-        new_buffer_size = self.current_buffer_size + self.current_bits_size
-        overflow = self.max_buffer_size - new_buffer_size
+        self.check_if_value_fits_bit_code_size(value, self.current_bits_size)
+        bits_to_write = self.current_bits_size
 
-        if overflow < 0:
-            # Too much to put in buffer - must flush
-            bits_that_fits_in_buffer = self.current_bits_size + overflow
-            to_be_writen_to_buffer_now = value & ((1 << bits_that_fits_in_buffer) - 1)
-            self._write_to_buffer(to_be_writen_to_buffer_now, bits_that_fits_in_buffer)
+        # write remaining bits to fill previous byte
+        bits_writen = 0
+
+        if self.remaining_bits:
+            bits_writen = 8 - self.remaining_bits
+            rem = value & (2**bits_writen - 1)
+            value >>= bits_writen
+            bits_to_write -= bits_writen
+
+            self.buffer <<= bits_writen
+            self.buffer |= rem
             self._write_current_buffer()
-            to_be_writen_to_buffer_later = value >> bits_that_fits_in_buffer
-            self._write_to_buffer(to_be_writen_to_buffer_later, -overflow)
-        else:
-            self._write_to_buffer(value, self.current_bits_size)
+            self.remaining_bits = 0
+
+        num_whole_bytes = int(bits_to_write / 8)
+        for i in range(num_whole_bytes):
+            v = value & 0xFF
+            value >>= 8
+            self.buffer = v
+            self._write_current_buffer()
+        self.remaining_bits = bits_to_write % 8
+        self.buffer = value
 
     def flush(self):
-        self._write_to_buffer(0, self.max_buffer_size - self.current_buffer_size)
-        self._write_current_buffer()
+        self.buffer <<= 8 - self.remaining_bits
+        if self.buffer:
+            self._write_current_buffer()
 
