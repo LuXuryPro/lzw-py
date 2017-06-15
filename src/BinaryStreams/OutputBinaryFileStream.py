@@ -61,3 +61,4 @@ class OutputBinaryFileStream:
     def flush(self):
         self._write_to_buffer(0, self.max_buffer_size - self.current_buffer_size)
         self._write_current_buffer()
+
