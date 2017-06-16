@@ -19,6 +19,8 @@ class OutputBinaryFileStream:
         self.current_buffer_size = 0
         self.reset_bit_code_size()
         self.counter = 0
+        self.num_writen_symbols = 0
+        self.sum_written_bits = 0
 
     def increase_bit_code_size(self):
         self.current_bits_size += 1
@@ -65,6 +67,8 @@ class OutputBinaryFileStream:
             self._write_current_buffer()
         self.remaining_bits = bits_to_write % 8
         self.buffer = value
+        self.num_writen_symbols += 1
+        self.sum_written_bits += self.current_bits_size
 
     def flush(self):
         self.buffer <<= 8 - self.remaining_bits

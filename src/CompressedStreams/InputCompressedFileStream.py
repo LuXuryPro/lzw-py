@@ -12,7 +12,7 @@ class InputCompressedFileStream:
         """
         self.input_binary_file_stream = input_binary_file_stream
 
-    def decompress(self, output_binary_file_object: BytesIO, validator):
+    def decompress(self, output_binary_file_object: BytesIO, validator=None):
         """
         Dekompresuje opakowany strumen wejsciowy do wskazanego pliku
         
@@ -27,19 +27,20 @@ class InputCompressedFileStream:
         while True:
             try:
                 value = self.input_binary_file_stream.read()
-                ov = validator.pop(0)
-                if value != ov:
-                    print(value)
-                    print(ov)
-                    print(validator)
-                    assert (False)
+                if validator:
+                    ov = validator.pop(0)
+                    if value != ov:
+                        print(value)
+                        print(ov)
+                        print(validator)
+                        assert (False)
                 if value == CLEAR_TABLE:
                     print("CLEAR")
                     self.input_binary_file_stream.reset_bit_code_size()
                     w = b""
                     self.clear_dictionary()
                     continue
-            except OverflowError:
+            except EOFError:
                 break
             if value in self.dictionary:
                 entry = self.dictionary[value]
@@ -54,7 +55,7 @@ class InputCompressedFileStream:
                 self.dictionary[self.new_value_index] = w + bytes([entry[0]])
                 self.new_value_index += 1
             w = entry
-            if self.new_value_index + (w != b"") == 2 ** self.input_binary_file_stream.current_bits_size:
+            if self.new_value_index + 1 == 2 ** self.input_binary_file_stream.current_bits_size:
                 print("UP")
                 self.input_binary_file_stream.increase_bit_code_size()
 

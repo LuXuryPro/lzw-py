@@ -39,9 +39,11 @@ class InputBinaryFileStream:
         byte = self.file_handle.read(1)
         self.buffer = struct.unpack("B", byte)[0]
         self.size -= 1
+        print(self.size)
 
     def read(self):
-
+        if self.size == 0:
+            raise EOFError
         bits_to_read = self.current_bits_size
         value_to_return = 0
         re = bits_to_read

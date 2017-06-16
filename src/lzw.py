@@ -34,12 +34,13 @@ def compress(input_file_object, output_file_object, parsed_args):
     output_compressed_stream = OutputCompressedFileStream(output_file_stream, parsed_args.b)
     output_compressed_stream.compress(input_file_object)
     output_file_stream.flush()
+    print("Bits per symbos: {bits}".format(bits=output_file_stream.sum_written_bits/output_file_stream.num_writen_symbols))
     output_file_object.flush()
 
 
 def decompress(input_file_object, output_file_object, parsed_args):
-    input_file_stream = InputBinaryFileStream(input_file_object, os.path.getsize(parsed_args.i) / 4)
-    input_compressed_stream = InputCompressedFileStream(input_file_stream, parsed_args.b)
+    input_file_stream = InputBinaryFileStream(input_file_object, os.path.getsize(parsed_args.i))
+    input_compressed_stream = InputCompressedFileStream(input_file_stream)
     input_compressed_stream.decompress(output_file_object)
     output_file_object.flush()
 
