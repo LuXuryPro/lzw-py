@@ -26,6 +26,7 @@ class OutputCompressedFileStream:
         """
         self.clear_dictionary()
         w = b""
+        self.validator = []
         while True:
             input_byte = input_binary_file_object.read(1)
             if input_byte == b"":
@@ -34,6 +35,7 @@ class OutputCompressedFileStream:
             if wc in self.dictionary:
                 w = wc
             else:
+                self.validator.append(self.dictionary[w])
                 self.output_binary_file_stream.write(self.dictionary[w])
                 self.dictionary[wc] = self.new_value_index
                 self.new_value_index += 1
@@ -43,11 +45,13 @@ class OutputCompressedFileStream:
                     self.output_binary_file_stream.increase_bit_code_size()
                     if self.output_binary_file_stream.current_bits_size > self.max_bits_size:
                         self.output_binary_file_stream.write(CLEAR_TABLE)
+                        self.validator.append(CLEAR_TABLE)
                         self.output_binary_file_stream.reset_bit_code_size()
                         self.clear_dictionary()
 
         # Output the code for w.
         if w:
+            self.validator.append(self.dictionary[w])
             self.output_binary_file_stream.write(self.dictionary[w])
 
     def clear_dictionary(self):

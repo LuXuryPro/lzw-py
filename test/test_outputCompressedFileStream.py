@@ -1,3 +1,4 @@
+import random
 from io import BytesIO
 from unittest import TestCase
 
@@ -33,7 +34,20 @@ class TestOutputCompressedFileStream(TestCase):
         output_binary_file_stream.increase_bit_code_size()
         for i in range(1024, 2048):
             output_binary_file_stream.write(i)
+        output_binary_file_stream.reset_bit_code_size()
+        for i in range(512):
+            output_binary_file_stream.write(i)
+        output_binary_file_stream.increase_bit_code_size()
+        for i in range(512, 1000):
+            output_binary_file_stream.write(i)
+        output_binary_file_stream.increase_bit_code_size()
+        for i in range(1024, 2000):
+            output_binary_file_stream.write(i)
+        output_binary_file_stream.increase_bit_code_size()
+        for i in range(2000, 4000):
+            output_binary_file_stream.write(i)
         output_binary_file_stream.flush()
+
         file_handle.seek(0)
 
         input_binary_file_stream = InputBinaryFileStream(file_handle, output_binary_file_stream.counter)
@@ -44,6 +58,18 @@ class TestOutputCompressedFileStream(TestCase):
             self.assertEquals(input_binary_file_stream.read(),i)
         input_binary_file_stream.increase_bit_code_size()
         for i in range(1024, 2048):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.reset_bit_code_size()
+        for i in range(512):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.increase_bit_code_size()
+        for i in range(512, 1000):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.increase_bit_code_size()
+        for i in range(1024, 2000):
+            self.assertEquals(input_binary_file_stream.read(),i)
+        input_binary_file_stream.increase_bit_code_size()
+        for i in range(2000, 4000):
             self.assertEquals(input_binary_file_stream.read(),i)
 
     def test_write_read_inc(self):
