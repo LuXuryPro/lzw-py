@@ -1,0 +1,1 @@
+MIN_BITS_SIZE = 9

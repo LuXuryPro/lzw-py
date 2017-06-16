@@ -3,6 +3,8 @@ from io import BytesIO
 
 import math
 
+from BinaryStreams import MIN_BITS_SIZE
+
 
 class OutputBinaryFileStream:
     """
@@ -22,12 +24,12 @@ class OutputBinaryFileStream:
         self.current_bits_size += 1
 
     def reset_bit_code_size(self):
-        self.current_bits_size = 9
+        self.current_bits_size = MIN_BITS_SIZE
 
     def check_if_value_fits_bit_code_size(self, value, size):
         if value == 0:
             return
-        if math.log2(value) > size:
+        if math.floor(math.log2(value)) + 1 > size:
             raise OverflowError(
                 "Attempt to write {value} using {size} bits".format(value=value, size=self.current_bits_size))
 
@@ -66,6 +68,5 @@ class OutputBinaryFileStream:
 
     def flush(self):
         self.buffer <<= 8 - self.remaining_bits
-        if self.buffer:
-            self._write_current_buffer()
+        self._write_current_buffer()
 

@@ -2,6 +2,7 @@ import struct
 from io import BytesIO
 
 from BinaryStreams.OutputBinaryFileStream import OutputBinaryFileStream
+from CompressedStreams import CLEAR_TABLE, NEW_CODE_INDEX, INITIAL_DICTIONARY_SIZE
 
 
 class OutputCompressedFileStream:
@@ -12,7 +13,6 @@ class OutputCompressedFileStream:
         """
         self.max_bits_size = max_bits_size
         self.output_binary_file_stream = output_binary_file_stream
-        self.clear_dictionary()
 
     def compress(self, input_binary_file_object: BytesIO):
         """
@@ -24,37 +24,34 @@ class OutputCompressedFileStream:
 
         :param input_binary_file_object: plik z którego czytać dane do skompresowania
         """
-        w = ""
-        input_byte = input_binary_file_object.read(1)
-        while input_byte != b'':
-            self.maintain_dictionary_capacity()
-            input_byte = chr(struct.unpack("B", input_byte)[0])
+        self.clear_dictionary()
+        w = b""
+        while True:
+            input_byte = input_binary_file_object.read(1)
+            if input_byte == b"":
+                break
             wc = w + input_byte
             if wc in self.dictionary:
                 w = wc
             else:
                 self.output_binary_file_stream.write(self.dictionary[w])
-                # Add wc to the dictionary.
-                self.dictionary[wc] = self.dict_size
-                self.dict_size += 1
+                self.dictionary[wc] = self.new_value_index
+                self.new_value_index += 1
                 w = input_byte
 
-                if self.dict_size == 2 ** self.output_binary_file_stream.current_bits_size + 1:
+                if self.new_value_index == 2 ** self.output_binary_file_stream.current_bits_size:
                     self.output_binary_file_stream.increase_bit_code_size()
-
-            input_byte = input_binary_file_object.read(1)
+                    if self.output_binary_file_stream.current_bits_size > self.max_bits_size:
+                        self.output_binary_file_stream.write(CLEAR_TABLE)
+                        self.output_binary_file_stream.reset_bit_code_size()
+                        self.clear_dictionary()
 
         # Output the code for w.
         if w:
             self.output_binary_file_stream.write(self.dictionary[w])
 
     def clear_dictionary(self):
-        self.dict_size = 256
-        self.dictionary = {chr(i): i for i in range(self.dict_size)}
+        num_elements = INITIAL_DICTIONARY_SIZE
+        self.dictionary = {bytes([i]): i for i in range(num_elements)}
+        self.new_value_index = NEW_CODE_INDEX
 
-    def maintain_dictionary_capacity(self):
-        if self.dict_size + 1 == 2 ** self.output_binary_file_stream.current_bits_size + 1:
-            self.output_binary_file_stream.increase_bit_code_size()
-        if self.output_binary_file_stream.current_bits_size == self.max_bits_size:
-            self.output_binary_file_stream.reset_bit_code_size()
-            self.clear_dictionary()

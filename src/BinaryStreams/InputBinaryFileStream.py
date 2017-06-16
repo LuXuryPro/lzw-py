@@ -3,6 +3,8 @@ from io import BytesIO
 
 import math
 
+from BinaryStreams import MIN_BITS_SIZE
+
 
 class InputBinaryFileStream:
     """
@@ -29,16 +31,16 @@ class InputBinaryFileStream:
         self.current_bits_size += 1
 
     def reset_bit_code_size(self):
-        self.current_bits_size = 9
+        self.current_bits_size = MIN_BITS_SIZE
 
     def _read_buffer(self):
+        if self.size == 0:
+            raise OverflowError
         byte = self.file_handle.read(1)
         self.buffer = struct.unpack("B", byte)[0]
         self.size -= 1
 
     def read(self):
-        if self.size <= 0:
-            raise OverflowError
 
         bits_to_read = self.current_bits_size
         value_to_return = 0
