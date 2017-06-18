@@ -35,7 +35,6 @@ class InputCompressedFileStream:
                         print(validator)
                         assert (False)
                 if value == CLEAR_TABLE:
-                    print("CLEAR")
                     self.input_binary_file_stream.reset_bit_code_size()
                     w = b""
                     self.clear_dictionary()
@@ -54,10 +53,9 @@ class InputCompressedFileStream:
             if w:
                 self.dictionary[self.new_value_index] = w + bytes([entry[0]])
                 self.new_value_index += 1
+                if self.new_value_index + 1 == 2 ** self.input_binary_file_stream.current_bits_size:
+                    self.input_binary_file_stream.increase_bit_code_size()
             w = entry
-            if self.new_value_index + 1 == 2 ** self.input_binary_file_stream.current_bits_size:
-                print("UP")
-                self.input_binary_file_stream.increase_bit_code_size()
 
     def clear_dictionary(self):
         num_elements = INITIAL_DICTIONARY_SIZE

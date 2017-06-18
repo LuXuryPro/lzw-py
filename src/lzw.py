@@ -30,11 +30,14 @@ def lzw(parsed_args):
 
 
 def compress(input_file_object, output_file_object, parsed_args):
+    input_file_size = os.path.getsize(parsed_args.i)
     output_file_stream = OutputBinaryFileStream(output_file_object)
     output_compressed_stream = OutputCompressedFileStream(output_file_stream, parsed_args.b)
     output_compressed_stream.compress(input_file_object)
     output_file_stream.flush()
-    print("Bits per symbos: {bits}".format(bits=output_file_stream.sum_written_bits/output_file_stream.num_writen_symbols))
+    print("Bits per output symbol = {bits:.6f}".format(bits=output_file_stream.sum_written_bits/output_file_stream.num_writen_symbols))
+    print("Bits per input symbol = {bits:.6f}".format(bits=output_file_stream.sum_written_bits/input_file_size))
+    print("Compression Ratio = {ratio:.6f}".format(ratio=input_file_size/output_file_stream.counter))
     output_file_object.flush()
 
 

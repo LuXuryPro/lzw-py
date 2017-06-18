@@ -71,6 +71,7 @@ class OutputBinaryFileStream:
         self.sum_written_bits += self.current_bits_size
 
     def flush(self):
-        self.buffer <<= 8 - self.remaining_bits
-        self._write_current_buffer()
+        if self.remaining_bits:
+            self.buffer <<= 8 - self.remaining_bits
+            self._write_current_buffer()
 

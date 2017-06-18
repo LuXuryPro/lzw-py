@@ -35,17 +35,19 @@ class OutputCompressedFileStream:
             if wc in self.dictionary:
                 w = wc
             else:
+
                 self.validator.append(self.dictionary[w])
                 self.output_binary_file_stream.write(self.dictionary[w])
                 self.dictionary[wc] = self.new_value_index
                 self.new_value_index += 1
                 w = input_byte
 
-                if self.output_binary_file_stream.current_bits_size + 1 > self.max_bits_size:
+                if self.new_value_index + 1 == 2**self.max_bits_size:
                     self.output_binary_file_stream.write(CLEAR_TABLE)
                     self.validator.append(CLEAR_TABLE)
                     self.output_binary_file_stream.reset_bit_code_size()
                     self.clear_dictionary()
+
 
                 if self.new_value_index == 2 ** self.output_binary_file_stream.current_bits_size:
                     self.output_binary_file_stream.increase_bit_code_size()

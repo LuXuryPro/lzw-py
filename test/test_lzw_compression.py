@@ -28,7 +28,7 @@ class TestOutputCompressedFileStream(TestCase):
         file_handle = BytesIO(byte)
         output_file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(output_file_handle)
-        max_bits_size = 11
+        max_bits_size = 10
         ff = FakeOutputStream(output_file_handle)
         compressed_stream = OutputCompressedFileStream(ff, max_bits_size)
         compressed_stream.compress(file_handle)
