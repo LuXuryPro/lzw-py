@@ -12,11 +12,9 @@ class OutputBinaryFileStream:
     """
 
     def __init__(self, file_handle: BytesIO):
-        self.max_buffer_size = 32
         self.remaining_bits = 0
         self.file_handle = file_handle
         self.buffer = 0
-        self.current_buffer_size = 0
         self.reset_bit_code_size()
         self.counter = 0
         self.num_writen_symbols = 0
@@ -44,9 +42,6 @@ class OutputBinaryFileStream:
     def write(self, value):
         self.check_if_value_fits_bit_code_size(value, self.current_bits_size)
         bits_to_write = self.current_bits_size
-
-        # write remaining bits to fill previous byte
-        bits_writen = 0
 
         if self.remaining_bits:
             bits_writen = 8 - self.remaining_bits

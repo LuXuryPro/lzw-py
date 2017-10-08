@@ -15,16 +15,12 @@ class InputBinaryFileStream:
         """
 
         :param file_handle: plik do czytania
-        :param size: ile pełnych 32 bit intow przeczytac z pliku
         """
-        self.max_buffer_size = 32
         self.remaining_bits = 0
         self.file_handle = file_handle
         self.file_handle.seek(0)
         self.buffer = 0
-        self.current_buffer_size = 0
         self.reset_bit_code_size()
-        self.eof = False
         self.size = size
 
     def increase_bit_code_size(self):

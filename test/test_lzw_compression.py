@@ -24,7 +24,6 @@ class TestOutputCompressedFileStream(TestCase):
         byte = byte + byte + byte + byte
         byte = byte + byte + byte + byte
         byte = byte + byte + byte + byte
-        print(len(byte))
         file_handle = BytesIO(byte)
         output_file_handle = BytesIO()
         output_binary_file_stream = OutputBinaryFileStream(output_file_handle)
@@ -34,7 +33,6 @@ class TestOutputCompressedFileStream(TestCase):
         compressed_stream.compress(file_handle)
 
         output_binary_file_stream.flush()
-        print(output_file_handle.getvalue().__sizeof__())
         output_file_handle.seek(0)
 
         input_binary_file_stream = InputBinaryFileStream(output_file_handle, output_binary_file_stream.counter)
@@ -43,8 +41,6 @@ class TestOutputCompressedFileStream(TestCase):
         decompresed_file_handle = BytesIO()
         decompresed_file_stream.decompress(decompresed_file_handle, compressed_stream.validator)
         self.assertEquals(decompresed_file_handle.getvalue(), byte)
-        print(decompresed_file_handle.getvalue().__sizeof__())
-        print(byte.__sizeof__())
 
     def test_compression_real(self):
         byte = b"\x01\x02\x03"
@@ -67,7 +63,6 @@ class TestOutputCompressedFileStream(TestCase):
         compressed_stream.compress(file_handle)
 
         output_binary_file_stream.flush()
-        print(output_file_handle.getvalue().__sizeof__())
         output_file_handle.seek(0)
 
         input_binary_file_stream = InputBinaryFileStream(output_file_handle, output_binary_file_stream.counter)
@@ -75,8 +70,6 @@ class TestOutputCompressedFileStream(TestCase):
         decompresed_file_handle = BytesIO()
         decompresed_file_stream.decompress(decompresed_file_handle, compressed_stream.validator)
         self.assertEquals(decompresed_file_handle.getvalue(), byte)
-        print(decompresed_file_handle.getvalue().__sizeof__())
-        print(byte.__sizeof__())
 
     def test_random_data(self):
         for i in range(100):
@@ -89,7 +82,6 @@ class TestOutputCompressedFileStream(TestCase):
             compressed_stream.compress(file_handle)
 
             output_binary_file_stream.flush()
-            print(output_file_handle.getvalue().__sizeof__())
             output_file_handle.seek(0)
 
             input_binary_file_stream = InputBinaryFileStream(output_file_handle, output_binary_file_stream.counter)
@@ -97,13 +89,10 @@ class TestOutputCompressedFileStream(TestCase):
             decompresed_file_handle = BytesIO()
             decompresed_file_stream.decompress(decompresed_file_handle, compressed_stream.validator)
             self.assertEquals(decompresed_file_handle.getvalue(), bytes)
-            print(decompresed_file_handle.getvalue().__sizeof__())
-            print(bytes.__sizeof__())
 
     def test_random_data2(self):
         for i in range(100):
             byte= bytes(bytearray(os.urandom(10000)))
-            print(len(byte))
             file_handle = BytesIO(byte)
             output_file_handle = BytesIO()
             output_binary_file_stream = OutputBinaryFileStream(output_file_handle)
@@ -113,7 +102,6 @@ class TestOutputCompressedFileStream(TestCase):
             compressed_stream.compress(file_handle)
 
             output_binary_file_stream.flush()
-            print(output_file_handle.getvalue().__sizeof__())
             output_file_handle.seek(0)
 
             input_binary_file_stream = InputBinaryFileStream(output_file_handle, output_binary_file_stream.counter)
@@ -122,5 +110,3 @@ class TestOutputCompressedFileStream(TestCase):
             decompresed_file_handle = BytesIO()
             decompresed_file_stream.decompress(decompresed_file_handle, compressed_stream.validator)
             self.assertEquals(decompresed_file_handle.getvalue(), byte)
-            print(decompresed_file_handle.getvalue().__sizeof__())
-            print(byte.__sizeof__())

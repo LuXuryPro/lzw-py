@@ -70,5 +70,21 @@ while bcopy:
 lns = len(all)
 
 counter = Counter(all)
-print(str.format('{0:.6f}', -sum( (count/lns) * math.log(count/lns, 2) for count in counter.values()) / 3))
+
+print("==========")
+
+all_p2 = []
+all_p3 = []
+bcopy = list(bytes)
+si = len(bcopy)
+counter = Counter(bcopy)
+
+for k, v in counter.items():
+    for ke, va in counter.items():
+        all_p2.append((v/si)* (va/si))
+        for key, val in counter.items():
+            all_p3.append((v/si) * (va/si) * (val/si))
+
+print(str.format('{0:.10f}', -sum( p * math.log(p, 2) for p in all_p2) / 2.0))
+print(str.format('{0:.10f}', -sum( p * math.log(p, 2) for p in all_p3) / 3.0))
 
